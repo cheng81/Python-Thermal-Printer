@@ -18,6 +18,9 @@ class TestPrinter():
     def printImage(self, img):
         print(">> IMG")
 
+    def feed(self, _how_much):
+        print("(line feed)")
+
 
 ledPin       = 18
 buttonPin    = 23

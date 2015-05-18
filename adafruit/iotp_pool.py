@@ -47,6 +47,7 @@ def size():
 def _perform(printer, job):
     print "Start job {}".format(str(job.id))
     job.run(printer)
+    printer.feed(3)
     print "Done job {}".format(str(job.id))
 
 
