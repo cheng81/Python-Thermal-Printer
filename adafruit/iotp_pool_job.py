@@ -83,7 +83,7 @@ class ImageJob(BaseJob):
             else:
                 w1 = 384
                 h1 = w1 * h / w
-            img = img.resize(w1, h1)
+            img = img.resize((w1, h1))
 
         # rotate if w > 384
         w, _ = img.size
