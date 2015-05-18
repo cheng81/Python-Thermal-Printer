@@ -40,8 +40,8 @@ class IotpAmqpClient(object):
     def send_img_job(self, image_contents):
         return self._call({'type': 'image', 'image_file': image_contents})
 
-    def send_simpletext_job(self, text):
-        return self._call({'type': 'simple_text', 'text': text})
+    def send_simpletext_job(self, text, wrap=False):
+        return self._call({'type': 'simple_text', 'text': text, 'wrap': wrap})
 
     def query_job_state(self, job_id):
         return self._call({'type': 'query_job_state', 'job_id': job_id})
