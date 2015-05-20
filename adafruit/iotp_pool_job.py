@@ -118,6 +118,8 @@ class RichTextJob(BaseJob):
     def _with_printer(self, printer):
         for c in self._commands:
             self._exec(c, printer)
+        printer.reset()
+        printer.setDefault()
         self._commands = None
 
     @staticmethod
