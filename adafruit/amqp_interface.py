@@ -1,6 +1,7 @@
 __author__ = 'frza'
 
 from pika import BlockingConnection, ConnectionParameters, PlainCredentials, BasicProperties
+from pika.exceptions import ConnectionClosed
 from adafruit.iotp_pool import enqueue, job_state
 from adafruit.iotp_pool_job import create_job
 import msgpack
@@ -56,6 +57,7 @@ class IotpAMQPServer(object):
         self._conn = None
         self._chan = None
         self._thread = None
+        self._closing_event = threading.Event()
 
     def conf(self, item, defv):
         return self._config.get(item, defv)
@@ -74,16 +76,43 @@ class IotpAMQPServer(object):
         self._chan.basic_consume(_on_request, queue=queue_name)
 
         print "interface.AMQP - started"
-        self._thread = threading.Thread(target=self._chan.start_consuming)
+        self._thread = threading.Thread(target=self._consume_channel)
         self._thread.daemon = True
         self._thread.start()
         print "interface.AMQP - serving"
 
+    def _consume_channel(self):
+        try:
+            self._chan.start_consuming()
+        except ConnectionClosed:
+            if not self._closing_event.is_set():
+                print "interface.AMQP - DISCONNECTION DETECTED - RESTART"
+                self.restart()
+
+    def restart(self):
+        while True:
+            time.sleep(1)
+            try:
+                print "interface.AMQP - attempting restart"
+                self.start()
+                break
+            except Exception, e:
+                print "interface.AMQP - restart failed, wait 1 sec and retry"
+        print "interface.AMQP - restart succeeded"
+
     def stop(self):
+        self._closing_event.set()
+        try:
+            self._chan.close()
+            while not self._chan.is_closed:
+                time.sleep(1)
+        except Exception:
+            pass
         try:
             self._conn.close()
             while not self._conn.is_closed:
                 time.sleep(1)
         except Exception:
             pass
+        self._thread.join()
         print "interface.AMQP - stopped"
