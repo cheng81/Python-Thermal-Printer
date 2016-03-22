@@ -84,7 +84,7 @@ class IotpAMQPServer(object):
     def _consume_channel(self):
         try:
             self._chan.start_consuming()
-        except ConnectionClosed:
+        except Exception:
             if not self._closing_event.is_set():
                 print "interface.AMQP - DISCONNECTION DETECTED - RESTART"
                 self.restart()
